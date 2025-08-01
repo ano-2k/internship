@@ -64,6 +64,8 @@ class Internship(models.Model):
     district = models.CharField(max_length=100)
     created_by = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.CASCADE, related_name='internships')
     created_at = models.DateTimeField(auto_now_add=True)
+    modified_at = models.DateTimeField(auto_now=True)
+
 
 
 class FaceToFaceInterview(models.Model):
