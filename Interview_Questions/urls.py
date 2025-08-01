@@ -7,5 +7,5 @@ urlpatterns = [
     path('quiz/<int:pk>/', QuizDetailView.as_view(), name='quiz_detail'),  # GET by id
     path('<int:pk>/edit/', QuizUpdateView.as_view(), name='quiz_edit'),   # PUT/PATCH
     path('<int:pk>/delete/', QuizDeleteView.as_view(), name='quiz_delete'), # DELETE
-    path('quiz/export/', ExportQuizExcelView.as_view(), name='quiz_export'),
+    path('quiz-export/', ExportQuizExcelView.as_view(), name='quiz_export'),
 ]

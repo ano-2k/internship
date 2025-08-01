@@ -50,19 +50,25 @@ class QuizDeleteView(generics.DestroyAPIView):
     def get_queryset(self):
         return Quiz.objects.filter(created_by=self.request.user)
     
-import openpyxl
-from openpyxl.utils import get_column_letter
-from django.http import HttpResponse
+
 from rest_framework.views import APIView
 from rest_framework.permissions import IsAuthenticated
-from .models import Quiz, Question, Option
+from rest_framework.response import Response
+from rest_framework import status
+from django.http import HttpResponse
+from openpyxl import Workbook
+from openpyxl.utils import get_column_letter
+from .models import Quiz, Question, Option  # Adjust import based on your models
 
 class ExportQuizExcelView(APIView):
     permission_classes = [IsAuthenticated]
-    
+
     def get(self, request, *args, **kwargs):
+        # Get module filter from query params
+        module = request.query_params.get('module', None)
+
         # Create the workbook and worksheet
-        wb = openpyxl.Workbook()
+        wb = Workbook()
         ws = wb.active
         ws.title = "Interview Questions"
 
@@ -72,6 +78,15 @@ class ExportQuizExcelView(APIView):
 
         # Gather and write data
         quizzes = Quiz.objects.prefetch_related('questions__options').all()
+        if module:
+            quizzes = quizzes.filter(title__icontains=module)
+
+        if not quizzes.exists():
+            return Response(
+                {"detail": "No quizzes found for the specified module."},
+                status=status.HTTP_404_NOT_FOUND
+            )
+
         for quiz in quizzes:
             for question in quiz.questions.all():
                 for option in question.options.all():
@@ -82,14 +97,17 @@ class ExportQuizExcelView(APIView):
                         "Yes" if option.is_correct else "No"
                     ])
 
-        # Set column widths, optional
-        for col_num, column_title in enumerate(headers, 1):
+        # Set column widths
+        for col_num, _ in enumerate(headers, 1):
             ws.column_dimensions[get_column_letter(col_num)].width = 30
 
         # Prepare response
+        filename = f"interview_questions_{module or 'all'}.xlsx"
         response = HttpResponse(
-            content=openpyxl.writer.excel.save_virtual_workbook(wb),
             content_type='application/vnd.openxmlformats-officedocument.spreadsheetml.sheet'
         )
-        response['Content-Disposition'] = 'attachment; filename="interview_questions.xlsx"'
+        response['Content-Disposition'] = f'attachment; filename="{filename}"'
+        
+        # Save workbook to response
+        wb.save(response)
         return response
