@@ -18,6 +18,14 @@ class QuizListView(generics.ListAPIView):
     serializer_class = QuizSerializer
     permission_classes = [permissions.IsAuthenticated]
 
+class MyQuizListView(generics.ListAPIView):
+    serializer_class = QuizSerializer
+    permission_classes = [IsEmployee]  # or IsAuthenticated if more general
+
+    def get_queryset(self):
+        return Quiz.objects.filter(created_by=self.request.user)
+
+
 # Get Quiz by ID
 class QuizDetailView(generics.RetrieveAPIView):
     queryset = Quiz.objects.all()

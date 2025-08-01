@@ -8,4 +8,6 @@ urlpatterns = [
     path('<int:pk>/edit/', QuizUpdateView.as_view(), name='quiz_edit'),   # PUT/PATCH
     path('<int:pk>/delete/', QuizDeleteView.as_view(), name='quiz_delete'), # DELETE
     path('quiz-export/', ExportQuizExcelView.as_view(), name='quiz_export'),
+    
+    path('my-quiz/', MyQuizListView.as_view(), name='my_quizzes'),
 ]
