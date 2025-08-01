@@ -1,5 +1,5 @@
 from rest_framework import generics, permissions
-from .models import CandidateProfile
+from .models import CandidateProfile, Internship
 from .serializers import CandidateProfileSerializer
 from Interview_Questions.permissions import IsCandidate  # Add this import if IsCandidate is defined in permissions.py
 
@@ -89,8 +89,16 @@ class ApplyInternshipView(generics.CreateAPIView):
     permission_classes = [IsAuthenticated]
 
     def post(self, request, *args, **kwargs):
+        internship_id = request.data.get("internship")
+        if not internship_id:
+            return Response({"internship": "This field is required."}, status=status.HTTP_400_BAD_REQUEST)
+        try:
+            internship = Internship.objects.get(id=internship_id)
+        except Internship.DoesNotExist:
+            return Response({"internship": "Invalid internship ID."}, status=status.HTTP_400_BAD_REQUEST)
+
         serializer = self.get_serializer(data=request.data)
         if serializer.is_valid():
-            serializer.save(user=request.user)  # Associate the logged-in user with the application
+            serializer.save(user=request.user, internship=internship)
             return Response({"message": "Application submitted successfully"}, status=status.HTTP_201_CREATED)
         return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
