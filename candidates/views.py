@@ -30,12 +30,32 @@ class CandidateProfileDetailView(generics.RetrieveUpdateAPIView):
 from .models import InternshipApplication
 from .serializers import InternshipApplicationSerializer
 
+# @api_view(['GET'])
+# @permission_classes([IsAuthenticated])
+# def list_internship_applications(request):
+#     applications = InternshipApplication.objects.filter(user=request.user).order_by('-applied_at')
+#     serializer = InternshipApplicationSerializer(applications, many=True)
+#     return Response(serializer.data, status=status.HTTP_200_OK)
+
+
 @api_view(['GET'])
 @permission_classes([IsAuthenticated])
-def list_internship_applications(request):
+def candidate_applications(request):
     applications = InternshipApplication.objects.filter(user=request.user).order_by('-applied_at')
     serializer = InternshipApplicationSerializer(applications, many=True)
     return Response(serializer.data, status=status.HTTP_200_OK)
+
+
+@api_view(['GET'])
+@permission_classes([IsAuthenticated])
+def interviewer_applications(request):
+    applications = InternshipApplication.objects.filter(
+        internship__created_by=request.user
+    ).order_by('-applied_at')
+    serializer = InternshipApplicationSerializer(applications, many=True)
+    return Response(serializer.data, status=status.HTTP_200_OK)
+
+
 
 @api_view(['PUT', 'PATCH'])
 @permission_classes([IsAuthenticated])
