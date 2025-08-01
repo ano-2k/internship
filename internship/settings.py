@@ -99,6 +99,14 @@ DATABASES = {
         'HOST': 'internship-db-internship-8ddd.b.aivencloud.com',
         'PORT': '14995',
     }
+    # 'default': {
+    #     'ENGINE': 'django.db.backends.mysql',
+    #     'NAME': 'ano',
+    #     'USER': 'root',
+    #     'PASSWORD':'root',
+    #     'HOST': '127.0.0.1',
+    #     'PORT': '3306',
+    # }
 }
 
 

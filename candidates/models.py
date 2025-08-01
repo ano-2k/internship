@@ -97,6 +97,6 @@ class InternshipApplication(models.Model):
     district = models.CharField(max_length=100,null=True)
     applied_at = models.DateTimeField(auto_now_add=True)
     resume = models.FileField(upload_to='resumes/')
-    internship = models.ForeignKey(Internship, on_delete=models.CASCADE, related_name='applications', null=True, blank=True)
+    internship = models.ForeignKey(Internship, on_delete=models.CASCADE, related_name='applications',null=True, blank=True)
     def __str__(self):
         return f"{self.user.username} - {self.internship_role}" if self.user else f"{self.internship_role}"

@@ -2,7 +2,7 @@ from rest_framework import generics, permissions
 from .models import CandidateProfile, Internship
 from .serializers import CandidateProfileSerializer
 from Interview_Questions.permissions import IsCandidate  # Add this import if IsCandidate is defined in permissions.py
-
+from django.shortcuts import get_object_or_404
 from rest_framework.decorators import api_view,permission_classes
 from rest_framework.response import Response
 from rest_framework import status
@@ -30,30 +30,16 @@ class CandidateProfileDetailView(generics.RetrieveUpdateAPIView):
 from .models import InternshipApplication
 from .serializers import InternshipApplicationSerializer
 
-# @api_view(['GET'])
-# @permission_classes([IsAuthenticated])
-# def list_internship_applications(request):
-#     applications = InternshipApplication.objects.filter(user=request.user).order_by('-applied_at')
-#     serializer = InternshipApplicationSerializer(applications, many=True)
-#     return Response(serializer.data, status=status.HTTP_200_OK)
-
-
 @api_view(['GET'])
 @permission_classes([IsAuthenticated])
-def candidate_applications(request):
-    applications = InternshipApplication.objects.filter(user=request.user).order_by('-applied_at')
+def list_internship_applications(request):
+    internships = Internship.objects.filter(created_by=request.user)
+    applications = InternshipApplication.objects.filter(internship__in=internships).order_by('-applied_at')
     serializer = InternshipApplicationSerializer(applications, many=True)
     return Response(serializer.data, status=status.HTTP_200_OK)
 
 
-@api_view(['GET'])
-@permission_classes([IsAuthenticated])
-def interviewer_applications(request):
-    applications = InternshipApplication.objects.filter(
-        internship__created_by=request.user
-    ).order_by('-applied_at')
-    serializer = InternshipApplicationSerializer(applications, many=True)
-    return Response(serializer.data, status=status.HTTP_200_OK)
+
 
 
 
@@ -83,6 +69,7 @@ def delete_application(request, pk):
     application.delete()
     return Response({"message": "Deleted successfully"}, status=status.HTTP_204_NO_CONTENT)
 
+from django.shortcuts import get_object_or_404
 
 class ApplyInternshipView(generics.CreateAPIView):
     serializer_class = InternshipApplicationSerializer
@@ -90,13 +77,7 @@ class ApplyInternshipView(generics.CreateAPIView):
 
     def post(self, request, *args, **kwargs):
         internship_id = request.data.get("internship")
-        if not internship_id:
-            return Response({"internship": "This field is required."}, status=status.HTTP_400_BAD_REQUEST)
-        try:
-            internship = Internship.objects.get(id=internship_id)
-        except Internship.DoesNotExist:
-            return Response({"internship": "Invalid internship ID."}, status=status.HTTP_400_BAD_REQUEST)
-
+        internship = get_object_or_404(Internship, id=internship_id)
         serializer = self.get_serializer(data=request.data)
         if serializer.is_valid():
             serializer.save(user=request.user, internship=internship)
