@@ -86,9 +86,18 @@ WSGI_APPLICATION = 'internship.wsgi.application'
 # https://docs.djangoproject.com/en/5.1/ref/settings/#databases
 import os 
 DATABASES = {
-    "default": {
-        "ENGINE": "django.db.backends.sqlite3",
-        "NAME": os.path.join(BASE_DIR, "db.sqlite3"),
+    # "default": {
+    #     "ENGINE": "django.db.backends.sqlite3",
+    #     "NAME": os.path.join(BASE_DIR, "db.sqlite3"),
+    # }
+    
+    'default': {
+        'ENGINE': 'django.db.backends.mysql',
+        'NAME': 'defaultdb',
+        'USER': 'avnadmin',
+        'PASSWORD':'AVNS_LBKiZPc-d0OeVEVogO9',
+        'HOST': 'internship-db-internship-8ddd.b.aivencloud.com',
+        'PORT': '14995',
     }
 }
 
