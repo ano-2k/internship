@@ -3,7 +3,7 @@ from django.conf import settings
 
 class Quiz(models.Model):
     title = models.CharField(max_length=255)
-    percentage_for_qualified = models.DecimalField(max_digits=5, decimal_places=2)
+    # percentage_for_qualified = models.DecimalField(max_digits=5, decimal_places=2,null=True, blank=True)
     duration_minutes = models.IntegerField()
     created_by = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.CASCADE)
 

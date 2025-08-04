@@ -53,7 +53,7 @@ class QuizSerializer(serializers.ModelSerializer):
 
     class Meta:
         model = Quiz
-        fields = ['id', 'title', 'percentage_for_qualified', 'duration_minutes', 'questions']
+        fields = ['id', 'title', 'duration_minutes', 'questions']
 
     def create(self, validated_data):
         questions_data = validated_data.pop('questions')
@@ -67,7 +67,7 @@ class QuizSerializer(serializers.ModelSerializer):
 
     def update(self, instance, validated_data):
         instance.title = validated_data.get('title', instance.title)
-        instance.percentage_for_qualified = validated_data.get('percentage_for_qualified', instance.percentage_for_qualified)
+        # instance.percentage_for_qualified = validated_data.get('percentage_for_qualified', instance.percentage_for_qualified)
         instance.duration_minutes = validated_data.get('duration_minutes', instance.duration_minutes)
         instance.save()
 
@@ -95,3 +95,8 @@ class QuizSerializer(serializers.ModelSerializer):
                 question_map[question_id].delete()
 
         return instance
+    
+class QuizTitleSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = Quiz
+        fields = ['id', 'title']

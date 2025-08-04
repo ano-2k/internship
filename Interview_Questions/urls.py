@@ -10,4 +10,6 @@ urlpatterns = [
     path('quiz-export/', ExportQuizExcelView.as_view(), name='quiz_export'),
     
     path('my-quiz/', MyQuizListView.as_view(), name='my_quizzes'),
+    path('quiz-titles/', MyQuizTitlesView.as_view(), name='my_quiz_titles'),
+
 ]

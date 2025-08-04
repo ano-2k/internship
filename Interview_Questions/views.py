@@ -1,6 +1,6 @@
 from rest_framework import generics, permissions
 from .models import Quiz
-from .serializers import QuizSerializer
+from .serializers import QuizSerializer,QuizTitleSerializer
 from .permissions import IsEmployee
 
 # Create Quiz (already provided)
@@ -119,3 +119,11 @@ class ExportQuizExcelView(APIView):
         # Save workbook to response
         wb.save(response)
         return response
+
+
+class MyQuizTitlesView(generics.ListAPIView):
+    serializer_class = QuizTitleSerializer
+    permission_classes = [IsEmployee]
+
+    def get_queryset(self):
+        return Quiz.objects.filter(created_by=self.request.user)

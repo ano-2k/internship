@@ -1,6 +1,6 @@
 from django.db import models
 from django.conf import settings
-
+from Interview_Questions.models import Quiz
 class Internship(models.Model):
     INTERNSHIP_TYPE_CHOICES = [
         ('in_office', 'In-Office'),
@@ -65,7 +65,12 @@ class Internship(models.Model):
     created_by = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.CASCADE, related_name='internships')
     created_at = models.DateTimeField(auto_now_add=True)
     modified_at = models.DateTimeField(auto_now=True)
-
+    
+    #quiz
+    quiz_set = models.ForeignKey(Quiz, on_delete=models.SET_NULL, null=True, blank=True, related_name='quizSets')
+    pass_percentage = models.PositiveIntegerField(null=True, blank=True)
+    quiz_open_date = models.DateField(null=True, blank=True)
+    quiz_open_time = models.TimeField(null=True, blank=True)
 
 
 
