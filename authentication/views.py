@@ -44,7 +44,8 @@ class LoginView(APIView):
             token, _ = Token.objects.get_or_create(user=user)
             return Response({
                 "access": token.key,
-                "role": user.role
+                "role": user.role,
+                "username":user.username,
             })
 
         return Response({"error": "Invalid Credentials"}, status=status.HTTP_400_BAD_REQUEST)
