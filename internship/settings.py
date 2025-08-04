@@ -181,5 +181,5 @@ CSRF_TRUSTED_ORIGINS = [
 import os
 
 # Media file settings (for resumes, images, etc.)
-MEDIA_URL = '/resumes/'
-MEDIA_ROOT = os.path.join(BASE_DIR, 'resumes')
+MEDIA_URL = '/media/'
+MEDIA_ROOT = os.path.join(BASE_DIR, 'media')
