@@ -1,6 +1,6 @@
 from rest_framework import serializers
 from .models import Internship
-from .models import FaceToFaceInterview
+
 
 class InternshipSerializer(serializers.ModelSerializer):
     class Meta:
@@ -11,7 +11,3 @@ class InternshipSerializer(serializers.ModelSerializer):
 
 
 
-class FaceToFaceInterviewSerializer(serializers.ModelSerializer):
-    class Meta:
-        model = FaceToFaceInterview
-        fields = ['id', 'name', 'internship_role', 'date', 'zoom']

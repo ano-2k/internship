@@ -1,6 +1,6 @@
 from rest_framework import serializers
 from .models import CandidateProfile
-from .models import InternshipApplication
+from .models import InternshipApplication,FaceToFaceInterview
 
 class CandidateProfileSerializer(serializers.ModelSerializer):
     class Meta:
@@ -24,4 +24,46 @@ class InternshipApplicationSerializer(serializers.ModelSerializer):
             if field_name not in self.Meta.read_only_fields:
                 field.required = False
         
+# serializers.py
 
+class CandidateAcceptedApplicationSerializer(serializers.ModelSerializer):
+    interview_id = serializers.SerializerMethodField()
+    interview_date = serializers.SerializerMethodField()
+    interview_time = serializers.SerializerMethodField()
+    interview_zoom = serializers.SerializerMethodField()
+
+    class Meta:
+        model = InternshipApplication
+        fields = ['id', 'candidate_name', 'internship_role', 'interview_id', 'interview_date','interview_time','interview_zoom']
+
+    def get_interview_id(self, obj):
+        interview = obj.interviews.first()
+        return interview.id if interview else None
+
+    def get_interview_date(self, obj):
+        interview = obj.interviews.first()
+        return interview.date if interview else None
+    
+    def get_interview_time(self, obj):
+       interview = obj.interviews.first()
+       return interview.time.strftime('%H:%M') if interview and interview.time else None
+
+
+
+    def get_interview_zoom(self, obj):
+        interview = obj.interviews.first()
+        return interview.zoom if interview else None
+
+
+class FaceToFaceInterviewSerializer(serializers.ModelSerializer):
+    company = serializers.CharField(source='application.company_name', read_only=True)
+    time = serializers.SerializerMethodField()
+    class Meta:
+        model = FaceToFaceInterview
+        fields = ['id', 'name', 'internship_role', 'date', 'zoom', 'company','time']
+        
+    def get_time(self, obj):
+        if obj.time:
+            # Format time as HH:MM AM/PM
+            return obj.time.strftime('%I:%M %p')  
+        return None

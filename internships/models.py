@@ -68,14 +68,8 @@ class Internship(models.Model):
 
 
 
-class FaceToFaceInterview(models.Model):
-    name = models.CharField(max_length=255)
-    user = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.CASCADE,null=True, blank=True)  # Link to User who owns it
-    internship_role = models.CharField(max_length=255)
-    date = models.DateField()
-    zoom = models.URLField(max_length=500, blank=True, null=True)
 
-    def __str__(self):
-        return f"{self.name} - {self.internship_role} on {self.date}"
     
-    
+
+
+   

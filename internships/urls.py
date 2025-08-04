@@ -13,9 +13,9 @@ urlpatterns = [
     path('<int:pk>/delete/', InternshipDeleteView.as_view(), name='internship_delete'),
      path('all-internships/', AllInternshipsListView.as_view(), name='all_internships_list'),
     
-    path('face2face-interview/list/', views.list_face_to_face_interview, name='list_face_to_face_interview'),
-    path('face2face-interview/<int:pk>/update/', views.face_to_face_interview_update, name='face_to_face_interview_update'),
-    path('face2face-interview/<int:pk>/delete/', views.face_to_face_interview_delete, name='face_to_face_interview_delete'),
+    
+
+    
     
    
 ]

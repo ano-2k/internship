@@ -2,6 +2,7 @@ from rest_framework import generics, permissions
 from .models import Internship
 from .serializers import InternshipSerializer
 from .permissions import IsEmployee,IsCandidate
+from candidates.models import InternshipApplication
 
 # Create - only employee
 class InternshipCreateView(generics.CreateAPIView):
@@ -48,52 +49,5 @@ class AllInternshipsListView(generics.ListAPIView):
     serializer_class = InternshipSerializer
     permission_classes = [IsCandidate]  # Restrict to candidates
     queryset = Internship.objects.all().order_by('-created_at')
-    
-    
-from rest_framework.decorators import api_view, permission_classes
-from rest_framework.permissions import IsAuthenticated
-from rest_framework.response import Response
-from .models import FaceToFaceInterview
-from .serializers import FaceToFaceInterviewSerializer
-from django.contrib.auth import get_user_model
-from django.shortcuts import get_object_or_404
-from rest_framework import status
-
-User = get_user_model()
-
-@api_view(['GET'])
-@permission_classes([IsAuthenticated])
-def list_face_to_face_interview(request):
-    if request.user.role != 'employee':
-        return Response({"detail": "Unauthorized"}, status=403)
-
-    interviews = FaceToFaceInterview.objects.filter(user=request.user)
-    serializer = FaceToFaceInterviewSerializer(interviews, many=True)
-    return Response(serializer.data, status=status.HTTP_200_OK)
 
 
-@api_view(['PUT', 'PATCH'])
-@permission_classes([IsAuthenticated])
-def face_to_face_interview_update(request, pk):
-    interview = get_object_or_404(FaceToFaceInterview, pk=pk)
-
-    if interview.user != request.user or request.user.role != 'employee':
-        return Response({"detail": "Unauthorized"}, status=403)
-
-    serializer = FaceToFaceInterviewSerializer(interview, data=request.data, partial=request.method == 'PATCH')
-    if serializer.is_valid():
-        serializer.save()
-        return Response(serializer.data)
-    return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
-
-
-@api_view(['DELETE'])
-@permission_classes([IsAuthenticated])
-def face_to_face_interview_delete(request, pk):
-    interview = get_object_or_404(FaceToFaceInterview, pk=pk)
-
-    if interview.user != request.user or request.user.role != 'employee':
-        return Response({"detail": "Unauthorized"}, status=403)
-
-    interview.delete()
-    return Response(status=status.HTTP_204_NO_CONTENT)

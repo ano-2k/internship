@@ -98,5 +98,23 @@ class InternshipApplication(models.Model):
     applied_at = models.DateTimeField(auto_now_add=True)
     resume = models.FileField(upload_to='resumes/')
     internship = models.ForeignKey(Internship, on_delete=models.CASCADE, related_name='applications',null=True, blank=True)
+    status = models.CharField(max_length=10, choices=[('pending', 'Pending'), ('accepted', 'Accepted'), ('rejected', 'Rejected')], default='pending')
+    #Candidate Details
+    candidate_name = models.CharField(max_length=255, null=True, blank=True)
+    candidate_email = models.EmailField(null=True, blank=True)
+    candidate_phone = models.CharField(max_length=15, null=True, blank=True)
+
     def __str__(self):
         return f"{self.user.username} - {self.internship_role}" if self.user else f"{self.internship_role}"
+
+
+class FaceToFaceInterview(models.Model):
+    application = models.ForeignKey('InternshipApplication', on_delete=models.CASCADE, related_name='interviews')
+    name = models.CharField(max_length=255)
+    internship_role = models.CharField(max_length=255)
+    date = models.DateField()
+    time = models.TimeField(blank=True, null=True)
+    zoom = models.URLField(max_length=500, blank=True, null=True)
+
+    def __str__(self):
+        return f"{self.name} - {self.internship_role} on {self.date}"
