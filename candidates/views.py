@@ -163,3 +163,71 @@ def submit_test_results(request):
         return Response({'error': 'Application not found.'}, status=status.HTTP_404_NOT_FOUND)
     except Quiz.DoesNotExist:
         return Response({'error': 'Quiz not found.'}, status=status.HTTP_404_NOT_FOUND)
+    
+    
+
+@api_view(['GET'])
+@permission_classes([IsAuthenticated])
+def test_results(request):
+    try:
+        user = request.user
+        applications = InternshipApplication.objects.filter(
+            user=user,
+            test_completed=True
+        ).select_related('internship')
+
+        results_data = []
+        passed_count = 0
+        failed_count = 0
+        total_score = 0
+        valid_score_count = 0
+
+        for app in applications:
+            passed = app.test_passed if app.test_passed is not None else False
+            score = app.test_score if app.test_score is not None else 0
+            if score > 0:
+                total_score += score
+                valid_score_count += 1
+
+            if passed:
+                passed_count += 1
+            else:
+                failed_count += 1
+
+            # Pick quiz date or fallback to applied_at
+            raw_completed_date = (
+                app.internship.quiz_open_date if app.internship and app.internship.quiz_open_date
+                else app.applied_at.date()
+            )
+
+            results_data.append({
+                'id': app.id,
+                'company_name': app.internship.company_name if app.internship else 'Unknown Company',
+                'internship_title': app.internship.internship_role if app.internship else 'Unknown Role',
+                'score': round(score),
+                'passed': passed,
+                'completed_date': raw_completed_date,  # keep as date for now
+            })
+
+   
+        results_data.sort(key=lambda x: x['completed_date'], reverse=True)
+
+        
+        for item in results_data:
+            item['completed_date'] = item['completed_date'].strftime('%Y-%m-%d')
+
+        avg_score = round(total_score / valid_score_count) if valid_score_count > 0 else 0
+
+        return Response({
+            'results': results_data,
+            'summary': {
+                'passed_tests': passed_count,
+                'failed_tests': failed_count,
+                'average_score': avg_score,
+            }
+        }, status=status.HTTP_200_OK)
+
+    except InternshipApplication.DoesNotExist:
+        return Response({'error': 'No completed tests found.'}, status=status.HTTP_404_NOT_FOUND)
+    except Exception as e:
+        return Response({'error': str(e)}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
