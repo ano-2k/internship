@@ -93,4 +93,73 @@ def candidate_scheduled_interviews(request):
     }, status=status.HTTP_200_OK)
     
     
-    
+from .models import InternshipApplication
+from .serializers import CandidateApplicationSerializer
+from Interview_Questions.models import Question, Quiz, Option
+from Interview_Questions.serializers import QuestionSerializer
+
+
+@api_view(['GET'])  
+@permission_classes([IsAuthenticated])
+def list_candidate_applications(request):
+    applications = InternshipApplication.objects.filter(user=request.user).order_by('-applied_at')
+    serializer = CandidateApplicationSerializer(applications, many=True)
+    return Response(serializer.data, status=status.HTTP_200_OK)
+
+@api_view(['GET'])
+@permission_classes([IsAuthenticated])
+def get_quiz_questions(request, quiz_id):
+    try:
+        quiz = Quiz.objects.get(id=quiz_id)
+        questions = quiz.questions.all()
+        serializer = QuestionSerializer(questions, many=True)
+        return Response(serializer.data, status=status.HTTP_200_OK)
+    except Quiz.DoesNotExist:
+        return Response({'error': 'Quiz not found.'}, status=status.HTTP_404_NOT_FOUND)
+
+@api_view(['POST'])
+@permission_classes([IsAuthenticated])
+def submit_test_results(request):
+    internship_id = request.data.get('internship_id')
+    answers = request.data.get('answers')
+
+    try:
+        application = InternshipApplication.objects.get(id=internship_id, user=request.user)
+        internship = application.internship
+        quiz = internship.quiz_set
+
+        correct_count = 0
+        total_questions = quiz.questions.count()
+        for question in quiz.questions.all():
+            selected_option_index = answers.get(str(question.id))
+            if selected_option_index is not None:
+                try:
+                    selected_option = question.options.all()[int(selected_option_index)]
+                    if selected_option.is_correct:
+                        correct_count += 1
+                except (IndexError, ValueError):
+                    continue
+
+        score = (correct_count / total_questions) * 100 if total_questions > 0 else 0
+        passed = score >= (internship.pass_percentage or 60)
+
+        application.test_score = score
+        application.test_passed = passed
+        application.test_completed = True
+        application.save()
+
+        return Response(
+            {
+                'score': score,
+                'passed': passed,
+                'test_completed': True,
+                'test_score': score,
+                'test_passed': passed,
+                'message': 'Test results submitted successfully.',
+            },
+            status=status.HTTP_200_OK
+        )
+    except InternshipApplication.DoesNotExist:
+        return Response({'error': 'Application not found.'}, status=status.HTTP_404_NOT_FOUND)
+    except Quiz.DoesNotExist:
+        return Response({'error': 'Quiz not found.'}, status=status.HTTP_404_NOT_FOUND)

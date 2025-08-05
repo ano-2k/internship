@@ -104,6 +104,10 @@ class InternshipApplication(models.Model):
     candidate_email = models.EmailField(null=True, blank=True)
     candidate_phone = models.CharField(max_length=15, null=True, blank=True)
     
+    
+    test_score = models.FloatField(null=True, blank=True)
+    test_passed = models.BooleanField(null=True, blank=True)
+    test_completed = models.BooleanField(default=False)
     def __str__(self):
         return f"{self.user.username} - {self.internship_role}" if self.user else f"{self.internship_role}"
 

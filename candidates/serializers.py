@@ -55,3 +55,56 @@ class CandidateAcceptedApplicationSerializer(serializers.ModelSerializer):
         return interview.zoom if interview else None
 
 
+class CandidateApplicationSerializer(serializers.ModelSerializer):
+    internship = serializers.SerializerMethodField()
+    test_scheduled = serializers.SerializerMethodField()
+
+    class Meta:
+        model = InternshipApplication
+        fields = [
+            'id',
+            'internship',
+            'company_name',
+            'internship_role',
+            'internship_type',
+            'internship_field',
+            'internship_nature',
+            'duration_months',
+            'applied_at',
+            'status',
+            'test_scheduled',
+            'test_score',
+            'test_passed',
+            'test_completed',
+        ]
+
+    def get_internship(self, obj):
+        internship = obj.internship
+        if internship:
+            return {
+                'id': internship.id,
+                'title': internship.internship_role,
+                'company': internship.company_name,
+                'location': f"{internship.district}, {internship.state}, {internship.country}",
+                'duration': f"{internship.duration_months} Months",
+            }
+        return {
+            'id': None,
+            'title': obj.internship_role or 'N/A',
+            'company': obj.company_name or 'N/A',
+            'location': f"{obj.district or 'N/A'}, {obj.state or 'N/A'}, {obj.country or 'N/A'}",
+            'duration': f"{obj.duration_months or 'N/A'} Months",
+        }
+
+    def get_test_scheduled(self, obj):
+        internship = obj.internship
+        if internship and internship.quiz_set and obj.status == 'accepted':
+            return {
+                'quiz_set_id': internship.quiz_set.id,
+                'quiz_title': internship.quiz_set.title,
+                'date': internship.quiz_open_date,
+                'time': internship.quiz_open_time,
+                'duration': internship.quiz_set.duration_minutes,
+                'pass_percentage': internship.pass_percentage,
+            }
+        return None
