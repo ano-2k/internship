@@ -12,6 +12,5 @@ urlpatterns = [
     # path('interviewer-applications/', views.interviewer_applications, name='interviewer-applications'),
    path('application-counts/', views.candidate_application_counts, name='candidate-application-counts'),
    path('scheduled-interviews/', views.candidate_scheduled_interviews, name='candidate-scheduled-interviews'),
-
 ]
 

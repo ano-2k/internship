@@ -15,12 +15,23 @@ from pathlib import Path
 # Build paths inside the project like this: BASE_DIR / 'subdir'.
 BASE_DIR = Path(__file__).resolve().parent.parent
 
+# Newly added for zoom integration
+
+# BASE_API = 'http://127.0.0.1:8000/'
 
 # Quick-start development settings - unsuitable for production
 # See https://docs.djangoproject.com/en/5.1/howto/deployment/checklist/
 
 # SECURITY WARNING: keep the secret key used in production secret!
 SECRET_KEY = 'django-insecure-gp7xbu@os5q#nz0a%=nh#3zktdflaj&9n@bx0%tn-n)xi&a72i'
+
+
+
+# # Newly added for zoom integration
+# ZOOM_CLIENT_ID = 'rIg0z3VzSEqRp1tJnTkn_g'
+# ZOOM_CLIENT_SECRET = 'JG7kmEluYYye6FtF2m4gpLAhbFRs32YF'
+
+
 
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = True
