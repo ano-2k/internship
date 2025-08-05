@@ -47,6 +47,7 @@ INSTALLED_APPS = [
     'internships',
     'candidates',
     'corsheaders',
+    'interviewer',
 
 ]
 

@@ -24,6 +24,7 @@ urlpatterns = [
     path('quiz/', include('Interview_Questions.urls')),
     path('internships/', include('internships.urls')),
     path('candidates/', include('candidates.urls')),
+    path('interviewer/', include('interviewer.urls')),
 
     
 

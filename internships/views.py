@@ -1,8 +1,8 @@
 from rest_framework import generics, permissions
-from .models import Internship
-from .serializers import InternshipSerializer
+from internships.models import Internship
+from internships.serializers import InternshipSerializer
 from .permissions import IsEmployee,IsCandidate
-from candidates.models import InternshipApplication
+
 
 # Create - only employee
 class InternshipCreateView(generics.CreateAPIView):
