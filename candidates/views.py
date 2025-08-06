@@ -142,7 +142,8 @@ def submit_test_results(request):
                 except (IndexError, ValueError):
                     continue
 
-        score = (correct_count / total_questions) * 100 if total_questions > 0 else 0
+        score = round((correct_count / total_questions) * 100, 2) if total_questions > 0 else 0
+
         passed = score >= (internship.pass_percentage or 60)
 
         # Update InternshipApplication
