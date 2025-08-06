@@ -31,7 +31,7 @@ class CandidateAcceptedApplicationSerializer(serializers.ModelSerializer):
     interview_date = serializers.SerializerMethodField()
     interview_time = serializers.SerializerMethodField()
     interview_zoom = serializers.SerializerMethodField()
-
+    test_score = serializers.SerializerMethodField()
     class Meta:
         model = InternshipApplication
         fields = ['id', 'candidate_name', 'internship_role','test_score', 'interview_id', 'interview_date','interview_time','interview_zoom']
@@ -48,17 +48,19 @@ class CandidateAcceptedApplicationSerializer(serializers.ModelSerializer):
        interview = obj.interviews.first()
        return interview.time.strftime('%H:%M') if interview and interview.time else None
 
-
-
     def get_interview_zoom(self, obj):
         interview = obj.interviews.first()
         return interview.zoom if interview else None
-
+    
+    def get_test_score(self, obj):
+        if obj.test_score is not None:
+            return round(obj.test_score, 2)
+        return None
 
 class CandidateApplicationSerializer(serializers.ModelSerializer):
     internship = serializers.SerializerMethodField()
     test_scheduled = serializers.SerializerMethodField()
-
+    test_score = serializers.SerializerMethodField()
     class Meta:
         model = InternshipApplication
         fields = [
@@ -109,6 +111,10 @@ class CandidateApplicationSerializer(serializers.ModelSerializer):
             }
         return None
     
+    def get_test_score(self, obj):
+        if obj.test_score is not None:
+            return round(obj.test_score, 2)  # <- round to 2 decimal places
+        return None
 
 from .models import AssessmentResult
 

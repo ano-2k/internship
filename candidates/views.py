@@ -211,7 +211,7 @@ def test_results(request):
                 'id': res.id,
                 'company_name': res.internship_application.internship.company_name if res.internship_application.internship else 'Unknown Company',
                 'internship_title': res.internship_application.internship.internship_role if res.internship_application.internship else 'Unknown Role',
-                'score': round(score),
+                'score': round(score,2),
                 'passed': passed,
                 'completed_date': res.completed_date.isoformat(),
             })
@@ -232,3 +232,32 @@ def test_results(request):
     except Exception as e:
         return Response({'error': str(e)}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
 
+
+
+@api_view(['GET'])
+@permission_classes([IsAuthenticated])
+def candidate_interview_calendar(request):
+    user = request.user
+    
+    # Get all applications of the logged-in candidate
+    applications = InternshipApplication.objects.filter(user=user)
+    
+    # Get all interviews linked to those applications
+    interviews = FaceToFaceInterview.objects.filter(application__in=applications)
+    
+    # Prepare interview data in similar format as interviewer calendar API
+    interview_data = [
+        {
+            'id': interview.id,
+            'internship_role': interview.internship_role,
+            'date': interview.date.isoformat(),
+            'time': interview.time.strftime('%I:%M %p') if interview.time else None,
+            'zoom': interview.zoom,
+            'company_name': interview.application.company_name if interview.application else None,
+        }
+        for interview in interviews
+    ]
+    
+    return Response({
+        'scheduled_interviews': interview_data,
+    }, status=status.HTTP_200_OK)
