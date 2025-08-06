@@ -112,3 +112,15 @@ class InternshipApplication(models.Model):
         return f"{self.user.username} - {self.internship_role}" if self.user else f"{self.internship_role}"
 
 
+
+
+
+class AssessmentResult(models.Model):
+    candidate = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.CASCADE, related_name='assessment_results')
+    internship_application = models.ForeignKey('InternshipApplication', on_delete=models.CASCADE, related_name='assessment_results')
+    score = models.FloatField()
+    passed = models.BooleanField()
+    completed_date = models.DateTimeField(auto_now_add=True)
+    
+    def __str__(self):
+        return f"{self.candidate.username} - {self.internship_application.internship_role} - Score: {self.score}"

@@ -117,6 +117,8 @@ def get_quiz_questions(request, quiz_id):
     except Quiz.DoesNotExist:
         return Response({'error': 'Quiz not found.'}, status=status.HTTP_404_NOT_FOUND)
 
+
+
 @api_view(['POST'])
 @permission_classes([IsAuthenticated])
 def submit_test_results(request):
@@ -143,10 +145,20 @@ def submit_test_results(request):
         score = (correct_count / total_questions) * 100 if total_questions > 0 else 0
         passed = score >= (internship.pass_percentage or 60)
 
+        # Update InternshipApplication
         application.test_score = score
         application.test_passed = passed
         application.test_completed = True
         application.save()
+
+        # Create AssessmentResult entry
+        AssessmentResult.objects.create(
+            candidate=request.user,
+            internship_application=application,
+            score=score,
+            passed=passed,
+            # completed_date will auto set by model's auto_now_add
+        )
 
         return Response(
             {
@@ -163,18 +175,18 @@ def submit_test_results(request):
         return Response({'error': 'Application not found.'}, status=status.HTTP_404_NOT_FOUND)
     except Quiz.DoesNotExist:
         return Response({'error': 'Quiz not found.'}, status=status.HTTP_404_NOT_FOUND)
+
     
     
+
+from .models import AssessmentResult
 
 @api_view(['GET'])
 @permission_classes([IsAuthenticated])
 def test_results(request):
     try:
         user = request.user
-        applications = InternshipApplication.objects.filter(
-            user=user,
-            test_completed=True
-        ).select_related('internship')
+        results = AssessmentResult.objects.filter(candidate=user).select_related('internship_application__internship')
 
         results_data = []
         passed_count = 0
@@ -182,9 +194,10 @@ def test_results(request):
         total_score = 0
         valid_score_count = 0
 
-        for app in applications:
-            passed = app.test_passed if app.test_passed is not None else False
-            score = app.test_score if app.test_score is not None else 0
+        for res in results:
+            score = res.score
+            passed = res.passed
+
             if score > 0:
                 total_score += score
                 valid_score_count += 1
@@ -194,27 +207,16 @@ def test_results(request):
             else:
                 failed_count += 1
 
-            # Pick quiz date or fallback to applied_at
-            raw_completed_date = (
-                app.internship.quiz_open_date if app.internship and app.internship.quiz_open_date
-                else app.applied_at.date()
-            )
-
             results_data.append({
-                'id': app.id,
-                'company_name': app.internship.company_name if app.internship else 'Unknown Company',
-                'internship_title': app.internship.internship_role if app.internship else 'Unknown Role',
+                'id': res.id,
+                'company_name': res.internship_application.internship.company_name if res.internship_application.internship else 'Unknown Company',
+                'internship_title': res.internship_application.internship.internship_role if res.internship_application.internship else 'Unknown Role',
                 'score': round(score),
                 'passed': passed,
-                'completed_date': raw_completed_date,  # keep as date for now
+                'completed_date': res.completed_date.isoformat(),
             })
 
-   
         results_data.sort(key=lambda x: x['completed_date'], reverse=True)
-
-        
-        for item in results_data:
-            item['completed_date'] = item['completed_date'].strftime('%Y-%m-%d')
 
         avg_score = round(total_score / valid_score_count) if valid_score_count > 0 else 0
 
@@ -226,8 +228,7 @@ def test_results(request):
                 'average_score': avg_score,
             }
         }, status=status.HTTP_200_OK)
-
-    except InternshipApplication.DoesNotExist:
-        return Response({'error': 'No completed tests found.'}, status=status.HTTP_404_NOT_FOUND)
+    
     except Exception as e:
         return Response({'error': str(e)}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
+

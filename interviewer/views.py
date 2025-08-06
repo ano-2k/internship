@@ -107,15 +107,16 @@ def list_internship_applications(request):
 
 @api_view(['GET'])
 @permission_classes([IsAuthenticated])
-def list_accepted_applications(request):
+def list_passed_test_applications(request):
     internships = Internship.objects.filter(created_by=request.user)
 
-    accepted_applications = InternshipApplication.objects.filter(
+    passed_test_applications = InternshipApplication.objects.filter(
         internship__in=internships,
-        status='accepted'
+        test_completed=True,     #Ensure test is completed
+        test_passed=True         #Ensure test is passed
     ).order_by('-applied_at')
 
-    serializer = CandidateAcceptedApplicationSerializer(accepted_applications, many=True)
+    serializer = CandidateAcceptedApplicationSerializer(passed_test_applications, many=True)
     return Response(serializer.data, status=status.HTTP_200_OK)
 
 

@@ -34,7 +34,7 @@ class CandidateAcceptedApplicationSerializer(serializers.ModelSerializer):
 
     class Meta:
         model = InternshipApplication
-        fields = ['id', 'candidate_name', 'internship_role', 'interview_id', 'interview_date','interview_time','interview_zoom']
+        fields = ['id', 'candidate_name', 'internship_role','test_score', 'interview_id', 'interview_date','interview_time','interview_zoom']
 
     def get_interview_id(self, obj):
         interview = obj.interviews.first()
@@ -108,3 +108,22 @@ class CandidateApplicationSerializer(serializers.ModelSerializer):
                 'pass_percentage': internship.pass_percentage,
             }
         return None
+    
+
+from .models import AssessmentResult
+
+class AssessmentResultSerializer(serializers.ModelSerializer):
+    company_name = serializers.CharField(source='internship_application.internship.company_name', read_only=True)
+    internship_title = serializers.CharField(source='internship_application.internship.internship_role', read_only=True)
+    completed_date = serializers.DateTimeField(format="%Y-%m-%d", read_only=True) 
+
+    class Meta:
+        model = AssessmentResult
+        fields = [
+            'id',
+            'company_name',
+            'internship_title',
+            'score',
+            'passed',
+            'completed_date',
+        ]
