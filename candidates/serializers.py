@@ -1,7 +1,7 @@
 from rest_framework import serializers
 from .models import CandidateProfile
 from .models import InternshipApplication
-from internships.models import Internship 
+from internships.serializers import InternshipSerializer
 class CandidateProfileSerializer(serializers.ModelSerializer):
     class Meta:
         model = CandidateProfile
@@ -120,20 +120,7 @@ class CandidateAcceptedApplicationSerializer(serializers.ModelSerializer):
 
 
 class CandidateApplicationSerializer(serializers.ModelSerializer):
-    class SlimInternshipSerializer(serializers.ModelSerializer):
-        class Meta:
-            model = Internship
-            exclude = [
-                'created_at',
-                'modified_at',
-                'pass_percentage',
-                'quiz_open_date',
-                'quiz_open_time',
-                'created_by',
-                'quiz_set',
-            ]
-
-    internship = SlimInternshipSerializer(read_only=True)
+    internship = InternshipSerializer(read_only=True)  # Nested live internship data
     test_scheduled = serializers.SerializerMethodField()
     test_score = serializers.SerializerMethodField()
 
@@ -141,7 +128,7 @@ class CandidateApplicationSerializer(serializers.ModelSerializer):
         model = InternshipApplication
         fields = [
             'id',
-            'internship',
+            'internship',          
             'applied_at',
             'status',
             'test_scheduled',
