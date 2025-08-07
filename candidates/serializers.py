@@ -1,7 +1,7 @@
 from rest_framework import serializers
 from .models import CandidateProfile
 from .models import InternshipApplication
-
+from internships.models import Internship 
 class CandidateProfileSerializer(serializers.ModelSerializer):
     class Meta:
         model = CandidateProfile
@@ -57,21 +57,91 @@ class CandidateAcceptedApplicationSerializer(serializers.ModelSerializer):
             return round(obj.test_score, 2)
         return None
 
+# class CandidateApplicationSerializer(serializers.ModelSerializer):
+#     internship = serializers.SerializerMethodField()
+#     test_scheduled = serializers.SerializerMethodField()
+#     test_score = serializers.SerializerMethodField()
+#     class Meta:
+#         model = InternshipApplication
+#         fields = [
+#             'id',
+#             'internship',
+#             'company_name',
+#             'internship_role',
+#             'internship_type',
+#             'internship_field',
+#             'internship_nature',
+#             'duration_months',
+#             'applied_at',
+#             'status',
+#             'test_scheduled',
+#             'test_score',
+#             'test_passed',
+#             'test_completed',
+#         ]
+
+#     def get_internship(self, obj):
+#         internship = obj.internship
+#         if internship:
+#             return {
+#                 'id': internship.id,
+#                 'title': internship.internship_role,
+#                 'company': internship.company_name,
+#                 'location': f"{internship.district}, {internship.state}, {internship.country}",
+#                 'duration': f"{internship.duration_months} Months",
+#             }
+#         return {
+#             'id': None,
+#             'title': obj.internship_role or 'N/A',
+#             'company': obj.company_name or 'N/A',
+#             'location': f"{obj.district or 'N/A'}, {obj.state or 'N/A'}, {obj.country or 'N/A'}",
+#             'duration': f"{obj.duration_months or 'N/A'} Months",
+#         }
+
+#     def get_test_scheduled(self, obj):
+#         internship = obj.internship
+#         if internship and internship.quiz_set and obj.status == 'accepted':
+#             return {
+#                 'quiz_set_id': internship.quiz_set.id,
+#                 'quiz_title': internship.quiz_set.title,
+#                 'date': internship.quiz_open_date,
+#                 'time': internship.quiz_open_time,
+#                 'duration': internship.quiz_set.duration_minutes,
+#                 'pass_percentage': internship.pass_percentage,
+#             }
+#         return None
+    
+#     def get_test_score(self, obj):
+#         if obj.test_score is not None:
+#             return round(obj.test_score, 2)  # <- round to 2 decimal places
+#         return None
+
+
+
+
 class CandidateApplicationSerializer(serializers.ModelSerializer):
-    internship = serializers.SerializerMethodField()
+    class SlimInternshipSerializer(serializers.ModelSerializer):
+        class Meta:
+            model = Internship
+            exclude = [
+                'created_at',
+                'modified_at',
+                'pass_percentage',
+                'quiz_open_date',
+                'quiz_open_time',
+                'created_by',
+                'quiz_set',
+            ]
+
+    internship = SlimInternshipSerializer(read_only=True)
     test_scheduled = serializers.SerializerMethodField()
     test_score = serializers.SerializerMethodField()
+
     class Meta:
         model = InternshipApplication
         fields = [
             'id',
             'internship',
-            'company_name',
-            'internship_role',
-            'internship_type',
-            'internship_field',
-            'internship_nature',
-            'duration_months',
             'applied_at',
             'status',
             'test_scheduled',
@@ -80,21 +150,9 @@ class CandidateApplicationSerializer(serializers.ModelSerializer):
             'test_completed',
         ]
 
-    def get_internship(self, obj):
-        internship = obj.internship
-        return {
-        'id': internship.id if internship else None,
-        'title': (internship.internship_role if internship else obj.internship_role) or 'N/A',
-        'company': (internship.company_name if internship else obj.company_name) or 'N/A',
-        'location': f"{(internship.district if internship else obj.district) or 'N/A'}, "
-                    f"{(internship.state if internship else obj.state) or 'N/A'}, "
-                    f"{(internship.country if internship else obj.country) or 'N/A'}",
-        'duration': f"{(internship.duration_months if internship else obj.duration_months) or 'N/A'} Months",
-    }
-
     def get_test_scheduled(self, obj):
         internship = obj.internship
-        if internship and internship.quiz_set and obj.status == 'accepted':
+        if internship and getattr(internship, 'quiz_set', None) and obj.status == 'accepted':
             return {
                 'quiz_set_id': internship.quiz_set.id,
                 'quiz_title': internship.quiz_set.title,
@@ -104,12 +162,13 @@ class CandidateApplicationSerializer(serializers.ModelSerializer):
                 'pass_percentage': internship.pass_percentage,
             }
         return None
-    
+
     def get_test_score(self, obj):
         if obj.test_score is not None:
-            return round(obj.test_score, 2)  # <- round to 2 decimal places
+            return round(obj.test_score, 2)
         return None
-
+    
+    
 from .models import AssessmentResult
 
 class AssessmentResultSerializer(serializers.ModelSerializer):
