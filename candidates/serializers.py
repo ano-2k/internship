@@ -82,21 +82,15 @@ class CandidateApplicationSerializer(serializers.ModelSerializer):
 
     def get_internship(self, obj):
         internship = obj.internship
-        if internship:
-            return {
-                'id': internship.id,
-                'title': internship.internship_role,
-                'company': internship.company_name,
-                'location': f"{internship.district}, {internship.state}, {internship.country}",
-                'duration': f"{internship.duration_months} Months",
-            }
         return {
-            'id': None,
-            'title': obj.internship_role or 'N/A',
-            'company': obj.company_name or 'N/A',
-            'location': f"{obj.district or 'N/A'}, {obj.state or 'N/A'}, {obj.country or 'N/A'}",
-            'duration': f"{obj.duration_months or 'N/A'} Months",
-        }
+        'id': internship.id if internship else None,
+        'title': (internship.internship_role if internship else obj.internship_role) or 'N/A',
+        'company': (internship.company_name if internship else obj.company_name) or 'N/A',
+        'location': f"{(internship.district if internship else obj.district) or 'N/A'}, "
+                    f"{(internship.state if internship else obj.state) or 'N/A'}, "
+                    f"{(internship.country if internship else obj.country) or 'N/A'}",
+        'duration': f"{(internship.duration_months if internship else obj.duration_months) or 'N/A'} Months",
+    }
 
     def get_test_scheduled(self, obj):
         internship = obj.internship
