@@ -1,6 +1,6 @@
 from django.urls import path
 from .views import *
-
+from . import views
 urlpatterns = [
     path('create-quiz/', QuizCreateView.as_view(), name='create_quiz'),     # POST
     path('all-quiz/', QuizListView.as_view(), name='quiz_list'),     # GET all
@@ -11,5 +11,5 @@ urlpatterns = [
     
     path('my-quiz/', MyQuizListView.as_view(), name='my_quizzes'),
     path('quiz-titles/', MyQuizTitlesView.as_view(), name='my_quiz_titles'),
-
+    path('<int:quiz_id>/download-pdf/', views.download_quiz_pdf, name='download_quiz_pdf'),
 ]
