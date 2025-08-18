@@ -103,22 +103,22 @@ DATABASES = {
     #     "NAME": os.path.join(BASE_DIR, "db.sqlite3"),
     # }
     
-    # 'default': {
-    #     'ENGINE': 'django.db.backends.mysql',
-    #     'NAME': 'defaultdb',
-    #     'USER': 'avnadmin',
-    #     'PASSWORD':'AVNS_LBKiZPc-d0OeVEVogO9',
-    #     'HOST': 'internship-db-internship-8ddd.b.aivencloud.com',
-    #     'PORT': '14995',
-    # }
     'default': {
         'ENGINE': 'django.db.backends.mysql',
-        'NAME': 'purse',
-        'USER': 'root',
-        'PASSWORD':'root',
-        'HOST': '127.0.0.1',
-        'PORT': '3306',
+        'NAME': 'defaultdb',
+        'USER': 'avnadmin',
+        'PASSWORD':'AVNS_LBKiZPc-d0OeVEVogO9',
+        'HOST': 'internship-db-internship-8ddd.b.aivencloud.com',
+        'PORT': '14995',
     }
+    # 'default': {
+    #     'ENGINE': 'django.db.backends.mysql',
+    #     'NAME': 'purse',
+    #     'USER': 'root',
+    #     'PASSWORD':'root',
+    #     'HOST': '127.0.0.1',
+    #     'PORT': '3306',
+    # }
 }
 
 
