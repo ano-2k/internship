@@ -130,7 +130,6 @@ class MyQuizTitlesView(generics.ListAPIView):
 
 
 # pip install reportlab Pillow
-
 from django.http import HttpResponse, Http404
 from rest_framework.decorators import api_view, permission_classes
 from rest_framework.permissions import IsAuthenticated
@@ -159,13 +158,19 @@ def download_quiz_pdf(request, quiz_id):
         passing_score = f"{internship.pass_percentage}%" if internship and internship.pass_percentage else "N/A"
 
         buffer = BytesIO()
+        
+        # Create safe filename first (we'll use it for PDF title too)
+        safe_filename = "".join(c for c in quiz.title if c.isalnum() or c in (' ', '-', '_')).rstrip()
+        pdf_title = f"{safe_filename}_quiz"
+        
         doc = SimpleDocTemplate(
             buffer, 
             pagesize=A4, 
             rightMargin=25*mm, 
             leftMargin=25*mm, 
             topMargin=10*mm,
-            bottomMargin=25*mm
+            bottomMargin=25*mm,
+            title=pdf_title  # Set PDF title metadata
         )
 
         styles = getSampleStyleSheet()
@@ -198,7 +203,7 @@ def download_quiz_pdf(request, quiz_id):
             fontSize=14,  # increased font size
             spaceAfter=10,
             spaceBefore=5,
-            leftIndent=0,
+            leftIndent=-50,
             fontName='Helvetica-Bold',  # Questions bold
             textColor=colors.HexColor('#374151')
         )
@@ -208,7 +213,7 @@ def download_quiz_pdf(request, quiz_id):
             parent=styles['Normal'],
             fontSize=12,  # increased font size
             spaceAfter=2,  # 1 line spacing between options
-            leftIndent=15,
+            leftIndent=-20,
             fontName='Helvetica',  # normal font
             textColor=colors.HexColor('#4b5563')
         )
@@ -219,12 +224,19 @@ def download_quiz_pdf(request, quiz_id):
             fontSize=11,
             spaceAfter=10,
             spaceBefore=5,
-            leftIndent=15,
+            leftIndent=-20,
             textColor=colors.HexColor('#16a34a'),
             fontName='Helvetica-Bold',
         )
 
         story = []
+
+        from django.utils import timezone
+        import pytz
+
+        user_timezone = pytz.timezone('Asia/Kolkata') 
+        current_time = timezone.now().astimezone(user_timezone)
+        formatted_time = current_time.strftime('%B %d, %Y at %I:%M %p')
 
         # First page content remains unchanged
         border_frame = Table([['']], colWidths=[160*mm], rowHeights=[250*mm])
@@ -274,7 +286,7 @@ def download_quiz_pdf(request, quiz_id):
             ['Duration', f'{quiz.duration_minutes} minutes'],
             ['Total Questions', str(quiz.questions.count())],
             ['Passing Score', passing_score],
-            ['Generated On', datetime.now().strftime('%B %d, %Y at %I:%M %p')],
+            ['Generated On', formatted_time],  # Use the corrected time
             ['Quiz ID', str(quiz.id)]
         ]
 
@@ -360,7 +372,7 @@ def download_quiz_pdf(request, quiz_id):
 
             
 
-        # Footer remains unchanged
+        # Footer - also use the corrected time
         footer_style = ParagraphStyle(
             'FooterStyle',
             parent=styles['Normal'],
@@ -376,7 +388,7 @@ def download_quiz_pdf(request, quiz_id):
         story.append(footer_table)
         story.append(Spacer(1, 10))
         story.append(Paragraph(
-            f"Generated on {datetime.now().strftime('%B %d, %Y at %I:%M %p')} | "
+            f"Generated on {formatted_time} | "  
             f"Quiz ID: {quiz.id} | Confidential & Proprietary",
             footer_style
         ))
@@ -396,7 +408,6 @@ def download_quiz_pdf(request, quiz_id):
         pdf_data = buffer.getvalue()
         buffer.close()
 
-        safe_filename = "".join(c for c in quiz.title if c.isalnum() or c in (' ', '-', '_')).rstrip()
         filename = f"{safe_filename.replace(' ', '_').lower()}_quiz.pdf"
 
         response = HttpResponse(pdf_data, content_type='application/pdf')
